@@ -1,0 +1,355 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
+    <title>InnoWaveQuizzes</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Comfortaa', sans-serif;
+            background-color: #E3AB71;
+            margin: 0;
+            overflow: hidden;
+            transition: background-color 0.5s;
+        }
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.5s;
+        }
+        #overlay.visible {
+            visibility: visible;
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.452);
+        }
+        #modal {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        #startButton {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #EB643B;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #startButton:hover {
+            background-color: #D95C31;
+        }
+        #questionContainer {
+            display: none;
+            text-align: center;
+            position: relative;
+            background-color: #003366;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+        #statusBar {
+            width: 100%;
+            background-color: #ddd;
+            height: 20px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        #progress {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .level {
+            font-size: 24px;
+            color: white;
+            margin-bottom: 10px;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        .question {
+            font-size: 24px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .answerButton {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 18px;
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            width: calc(45% - 20px);
+        }
+        .answerButton:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        #timer {
+            font-size: 20px;
+            color: white;
+            margin-top: 10px;
+        }
+        #countdownBar {
+            width: 100%;
+            background-color: #ddd;
+            height: 20px;
+            margin-top: 10px;
+        }
+        #countdownProgress {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 100%;
+            transition: width 1s linear;
+        }
+        @media (max-width: 600px) {
+            .question, .answerButton {
+                font-size: 18px;
+            }
+            #startButton {
+                font-size: 16px;
+            }
+            .level {
+                font-size: 20px;
+            }
+            .answerButton {
+                width: calc(100% - 20px);
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay">
+        <div id="modal">
+            <h1>Добро пожаловать!</h1>
+            <p>Нажмите "Начать", чтобы продолжить.</p>
+            <button id="startButton">Начать</button>
+        </div>
+    </div>
+    <div id="questionContainer">
+        <div class="level" id="level">Уровень 1</div>
+        <div id="statusBar">
+            <div id="progress"></div>
+        </div>
+        <div class="question" id="question">Какое расстояние между автомобилями следует соблюдать в условиях плохой видимости?</div>
+        <div>
+            <button class="answerButton" data-correct="true">a. Увеличенное в два раза</button>
+            <button class="answerButton" data-correct="false">b. Обычное расстояние</button>
+            <button class="answerButton" data-correct="false">c. Уменьшенное</button>
+            <button class="answerButton" data-correct="false">d. Не знаю</button>
+        </div>
+        <div id="timer">5</div>
+        <div id="countdownBar">
+            <div id="countdownProgress"></div>
+        </div>
+    </div>
+
+    <script>
+        const overlay = document.getElementById('overlay');
+        const startButton = document.getElementById('startButton');
+        const questionContainer = document.getElementById('questionContainer');
+        const questionElement = document.getElementById('question');
+        const answerButtons = document.querySelectorAll('.answerButton');
+        const progressBar = document.getElementById('progress');
+        const timerElement = document.getElementById('timer');
+        const countdownProgress = document.getElementById('countdownProgress');
+        const totalQuestions = 10;
+        let currentQuestionIndex = 0;
+        let timer;
+
+        const questions = [
+            {
+                question: "Что контролирует подачу воздуха в двигатель?",
+                answers: ["Вакуумный усилитель", "Дроссельная заслонка", "Вентиляционная система", "Не знаю"],
+                correct: 1
+            },
+            {
+                question: "Что предовращает блокировку колес при торможении?",
+                answers: ["TCS", "ABS", "ESP", "Не знаю"],
+                correct: 1
+            },
+            {
+                question: "Какой компонентнейтрализует вредные выбросы?",
+                answers: ["Сажевый фильтр", "Глужитель", "Катализатор", "Не знаю"],
+                correct: 2
+            },
+            {
+                question: "Что передает вращение отдвигателя к колесам?",
+                answers: ["Карданный вал", "Ремень ГРМ", "Стартер", "Не знаю"],
+                correct: 0
+            },
+            {
+                question: "Что регулирует потокохлаждающей жидкости?",
+                answers: ["Радиатор", "Водяной насос", "Термостат", "Не знаю"],
+                correct: 2
+            },
+            {
+                question: "Какой компонент автомобиля отвечает за запуск двигателя?",
+                answers: ["Альтернатор", "Стартер", "Генератор", "Не знаю"],
+                correct: 1
+            },
+            {
+                question: "Что уменьшает трение в двигателе?",
+                answers: ["Подшипник", "Фильтр", "Сальник", "Не знаю"],
+                correct: 0
+            },
+            {
+                question: "При прохождении поворота на мокрой дороге вас следует?",
+                answers: ["Ускоряться", "Держать текущую скорость", "Снижать скорость", "Не знаю"],
+                correct: 2
+            },
+            {
+                question: "Когда вы едите по заснеженной дороге, вам следует снизить скорость на?",
+                answers: ["50%", "30%", "90%", "Не знаю"],
+                correct: 0
+            },
+        ];
+
+        overlay.classList.add('visible');
+
+        startButton.addEventListener('click', () => {
+            overlay.classList.remove('visible');
+            document.body.style.backgroundColor = "#003366";
+            questionContainer.style.display = 'block';
+            showLevel();
+        });
+
+        function showLevel() {
+            const levelElement = document.getElementById('level');
+            levelElement.style.opacity = 1;
+            setTimeout(() => {
+                levelElement.style.opacity = 0;
+                setTimeout(loadQuestion, 1000);
+            }, 2000);
+        }
+
+        function loadQuestion() {
+            clearAnswerStyles();
+            const currentQuestion = questions[currentQuestionIndex];
+            questionElement.textContent = currentQuestion.question;
+            answerButtons.forEach((button, index) => {
+                button.textContent = String.fromCharCode(97 + index) + '. ' + currentQuestion.answers[index];
+                button.disabled = false; // Активируем кнопки
+            });
+            startTimer(5); // Запускаем таймер с 5 секунд
+            updateProgressBar();
+        }
+
+        function startTimer(duration) {
+            let timeLeft = duration;
+            timerElement.textContent = timeLeft;
+            countdownProgress.style.width = '100%';
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = Math.max(timeLeft, 0);
+                countdownProgress.style.width = (timeLeft / duration * 100) + '%';
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    checkAnswer(-1); // Если время вышло, проверяем как неправильный ответ
+                }
+            }, 1000);
+        }
+
+        answerButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                clearInterval(timer);
+                checkAnswer(index);
+            });
+        });
+
+        function checkAnswer(selectedIndex) {
+            const currentQuestion = questions[currentQuestionIndex];
+            answerButtons.forEach((button, index) => {
+                button.disabled = true;
+                if (index === currentQuestion.correct) {
+                    button.style.backgroundColor = 'green'; // Правильный ответ
+                } else if (index === selectedIndex) {
+                    button.style.backgroundColor = 'red'; // Неправильный ответ
+                }
+            });
+
+            currentQuestionIndex++;
+            if (currentQuestionIndex < totalQuestions) {
+                setTimeout(() => {
+                    loadQuestion(); // Загружаем следующий вопрос
+                }, 5000); // Ждем 5 секунд перед следующим вопросом
+            } else {
+                alert('Викторина завершена!');
+            }
+        }
+
+        function clearAnswerStyles() {
+            answerButtons.forEach(button => {
+                button.style.backgroundColor = 'transparent';
+            });
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+            progressBar.style.width = progress + '%';
+        }
+    </script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>
