@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
+    <title>InnoWaveQuizzes</title>
+    <style>
+        body {
+            display: grid;
+            justify-content: center;
+            align-items: center; /* Вертикальное выравнивание */
+            height: 100vh; /* Занимает всю высоту экрана */
+            font-family: Comfortaa;
+            background-color: #E3AB71;
+            justify-items: center;
+            margin: 0; /* Убираем отступы по умолчанию */
+        }
+        h1 {
+            color: #C85C46;
+            font-size: 40pt;
+            text-align: center;
+            margin: 0; /* Убираем отступы вокруг заголовка */
+        }
+        .status-bar {
+            width: 100%; /* Занимает всю ширину родителя */
+            height: 20px; /* Высота статус-бара */
+            background-color: #E3AB71; /* Цвет фона статус-бара */
+            border: 2px solid #C85C46; /* Цвет границы статус-бара */
+            margin-top: 30px;
+            position: relative; /* Для позиционирования внутреннего элемента */
+            overflow: hidden; /* Скрывает переполнение */
+            padding: 2px; /* Внутренний отступ в 1 пиксель */
+            box-sizing: border-box; /* Учитывает границы и отступы в ширине */
+        }
+        .status-fill {
+            height: 100%; /* Заполняет всю высоту статус-бара */
+            width: 0; /* Начальное значение ширины */
+            background-color: #C85C46; /* Цвет заполнения статус-бара */
+            animation: fill 7s linear forwards; /* Анимация заполнения */
+        }
+        @keyframes fill {
+            from {
+                width: 0; /* Начальная ширина */
+            }
+            to {
+                width: 100%; /* Конечная ширина */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>InnoWave<br>Quizzes</h1>
+        <div class="status-bar">
+            <div class="status-fill"></div>
+        </div>
+    </div>
+
+    <script>
+        // Перенаправление после завершения анимации
+        const statusFill = document.querySelector('.status-fill');
+        statusFill.addEventListener('animationend', () => {
+            window.location.href = 'main.html'; // Замените на нужный URL
+        });
+    </script>
+</body>
+</html>

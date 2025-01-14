@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InnoWaveQuizzes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            height: 100vh; /* Занимает всю высоту экрана */
+            font-family: 'Comfortaa', sans-serif;
+            background-color: #E3AB71;
+            margin: 0; /* Убираем отступы по умолчанию */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Поднимаем содержимое к верхней части страницы */
+            align-items: center; /* Центрируем содержимое по горизонтали */
+            overflow-y: auto; /* Позволяем вертикальную прокрутку */
+            position: relative; /* Для позиционирования размытости */
+        }
+        header {
+            padding: 10px;
+            background: #EB643B;
+            display: flex;
+            flex-direction: column; /* Изменено на столбец */
+            align-items: center; /* Центрируем содержимое по вертикали */
+            width: 100%; /* Занимает всю ширину */
+            box-sizing: border-box; /* Учитываем отступы в ширине */
+        }
+        h1 {
+            color: #E3AB71;
+            padding: 10px;
+            font-size: 24pt; /* Уменьшен размер шрифта для мобильной версии */
+            margin: 0; /* Убираем отступы вокруг заголовка */
+        }
+        .money {
+            padding: 10px; /* Внутренний отступ */
+            border: 2px solid #EB643B; /* Цвет рамки */
+            background-color: #E3AB71; /* Цвет фона рамки */
+            border-radius: 5px; /* Закругленные углы */
+            display: flex;
+            align-items: center; /* Центрируем текст по вертикали */
+        }
+        .money span {
+            color: #EB643B; /* Цвет текста внутри рамки */
+            font-size: 20pt; /* Размер шрифта */
+        }
+        .inp {
+            width: 100%; /* Занимает всю ширину */
+            margin: 20px 0; /* Отступ сверху и снизу */
+            display: flex;
+            justify-content: center; /* Центрируем поисковую систему */
+        }
+        .input {
+            width: 80%; /* Ширина поля ввода */
+            height: 40px;
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
+            font-size: 16pt; /* Размер шрифта */
+        }
+        .quiz-cards {
+            display: grid;
+            grid-template-columns: 1fr; /* 1 колонка для мобильной версии */
+            gap: 20px; /* Промежуток между карточками */
+            width: 90%; /* Занимает 90% ширины экрана */
+            padding: 20px; /* Отступ вокруг карточек */
+        }
+        .card {
+            background: #EB643B; /* Цвет фона карточки */
+            border-radius: 5px; /* Закругленные углы */
+            padding: 20px;
+            text-align: center;
+            color: #E3AB71; /* Цвет текста */
+            font-size: 18pt;
+        }
+        .overlay {
+            position: fixed; /* Зафиксировано на экране */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8); /* Полупрозрачный фон */
+            backdrop-filter: blur(5px); /* Размытие фона */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden; /* Скрыто по умолчанию */
+            z-index: 10; /* Поверх остальных элементов */
+        }
+        .message {
+            background: #EB643B;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #E3AB71;
+            font-size: 20pt;
+        }
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #E3AB71;
+            color: #EB643B;
+            font-size: 16pt;
+            cursor: pointer;
+        }
+        .menu {
+            position: absolute; /* Абсолютное позиционирование */
+            top: 90px; /* Отступ от верхней части заголовка */
+            width: 300px;
+            font-size: 16pt;
+            left: 10px; /* Отступ от левой стороны */
+            background: #EB643B; /* Цвет фона меню */
+            border-radius: 5px; /* Закругленные углы */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень для меню */
+            display: none; /* Скрыто по умолчанию */
+            z-index: 20; /* Поверх остальных элементов */
+        }
+        .menu-item {
+            padding: 10px 15px; /* Отступы для пунктов меню */
+            color: #E3AB71; /* Цвет текста в меню */
+            cursor: pointer; /* Указатель при наведении */
+            transition: background 0.3s; /* Плавный переход для фона */
+        }
+        .menu-item:hover {
+            background: rgba(227, 171, 113, 0.8); /* Цвет фона при наведении */
+        }
+
+        /* Стили для компьютера */
+        @media (min-width: 768px) {
+            .quiz-cards {
+                grid-template-columns: repeat(4, 1fr); /* 4 колонки для компьютера */
+            }
+            header {
+                flex-direction: row; /* Вернуть в строку для больших экранов */
+                justify-content: space-between; /* Распределяем элементы между краями */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="burger" id="burgerButton">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <h1>InnoWaveQuizzes</h1>
+        <div class="money">
+            <span id="balance">₽ 0.00</span>
+        </div>
+    </header>
+    <div class="inp">
+        <input class="input" type="search" placeholder="Найти викторину">
+    </div>
+    <div class="quiz-cards">
+        <a class="card" href="victorina.html?balance=1000">Автомобильное строение</a>
+        <div class="card">Викторина 2</div>
+        <div class="card">Викторина 3</div>
+        <div class="card">Викторина 4</div>
+        <div class="card">Викторина 5</div>
+        <div class="card">Викторина 6</div>
+        <div class="card">Викторина 7</div>
+        <div class="card">Викторина 8</div>
+    </div>
+
+    <div class="overlay" id="welcomeOverlay">
+        <div class="message">
+            Добро пожаловать в игру! Вы получили вознаграждение в 1000 рублей!
+            <button class="button" id="continueButton">Продолжить</button>
+        </div>
+    </div>
+
+    <script>
+        // Функция для сохранения баланса в localStorage
+        function saveBalance(balance) {
+            localStorage.setItem('balance', balance);
+        }
+
+        // Функция для загрузки баланса из localStorage
+        function loadBalance() {
+            const balance = localStorage.getItem('balance');
+            return balance ? balance : '₽ 0.00'; // Возвращаем 0, если баланс не установлен
+        }
+
+        // Проверяем, первый ли пользователь
+        const isFirstUser  = localStorage.getItem('isFirstUser ') === null; // Убедитесь, что здесь нет пробела
+
+        if (isFirstUser ) {
+            // Устанавливаем флаг, что пользователь уже был
+            localStorage.setItem('isFirstUser ', 'false');
+
+            // Показываем приветственное сообщение через 5 секунд
+            setTimeout(() => {
+                document.getElementById('welcomeOverlay').style.visibility = 'visible';
+            }, 5000);
+        }
+
+        // Закрываем приветственное сообщение и обновляем баланс
+        document.getElementById('continueButton').onclick = function() {
+            document.getElementById('welcomeOverlay').style.visibility = 'hidden';
+            // Обновляем баланс через 3 секунды
+            setTimeout(() => {
+                document.getElementById('balance').innerText = '₽ 1000.00'; // Обновляем баланс
+                saveBalance('₽ 1000.00'); // Сохраняем новый баланс
+            }, 3000);
+        };
+
+        // Обновляем отображение баланса
+        document.getElementById('balance').innerText = loadBalance();
+
+        // Обработка нажатия на кнопку бургер
+        document.getElementById('burgerButton').onclick = function() {
+            const menu = document.getElementById('quizMenu');
+            // Переключаем видимость меню
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        };
+
+        // Закрыть меню при нажатии на пункт меню
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.onclick = function() {
+                alert(`Вы выбрали ${this.innerText}`); // Здесь вы можете добавить логику для выбора категории
+                document.getElementById('quizMenu').style.display = 'none'; // Закрываем меню
+            };
+        });
+    </script>
+</body>
+</html>
